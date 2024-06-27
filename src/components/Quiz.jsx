@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import QUESTIONS from '../questions.js';
 import QuestionTimer from '../components/QuestionTimer.jsx';
 import quizCompleteImg from '../assets/quiz-complete.png';
@@ -15,14 +15,14 @@ export default function Quiz() {
     const quizIsComplete = activeQuestionIndex === QUESTIONS.length;
 
     // Funktion zum Verarbeiten der Auswahl einer Antwort.
-    function handleSelectAnswer(selectedAnswer) {
+    const handleSelectAnswer = useCallback (function handleSelectAnswer(selectedAnswer) {
         // Aktualisiere die userAnswers, um die ausgewählte Antwort hinzuzufügen.
-        if (activeQuestionIndex < QUESTIONS.length) {
-            setUserAnswers((prevUserAnswers) => {
-                return [...prevUserAnswers, selectedAnswer];
-            });
-        }
-    }
+        setUserAnswers((prevUserAnswers) => {
+          return [...prevUserAnswers, selectedAnswer];
+        });
+    }, []);
+
+    const handleSkipAnswer = useCallback(() => handleSelectAnswer(null), [handleSelectAnswer]);
 
     // Wenn das Quiz abgeschlossen ist, zeige die Abschlussnachricht und das Bild an.
     if (quizIsComplete) {
@@ -36,6 +36,7 @@ export default function Quiz() {
 
     // Kopiere die Antworten der aktuellen Frage in ein neues Array.
     const shuffledAnswers = QUESTIONS[activeQuestionIndex]?.answers ? [...QUESTIONS[activeQuestionIndex].answers] : [];
+    
     // Mische die Antworten zufällig.
     shuffledAnswers.sort(() => Math.random() - 0.5);
 
@@ -46,7 +47,7 @@ export default function Quiz() {
                 {/* Integriere den QuestionTimer, der das Quiz nach einer bestimmten Zeitspanne automatisch fortsetzt */}
                 <QuestionTimer 
                     timeout={10000} 
-                    onTimeout={() => handleSelectAnswer(null)} 
+                    onTimeout={handleSelectAnswer} 
                 />
                 {/* Anzeige des Textes der aktuellen Frage */}
                 <h2>{QUESTIONS[activeQuestionIndex]?.text || 'Loading...'}</h2>
