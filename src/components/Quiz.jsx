@@ -1,5 +1,6 @@
 import { useState } from "react";
 import QUESTIONS from '../questions.js';
+import QuestionTimer from '../components/QuestionTimer.jsx';
 import quizCompleteImg from '../assets/quiz-complete.png';
 
 // Definiere die Quiz-Komponente als Standardexport
@@ -16,9 +17,11 @@ export default function Quiz() {
     // Funktion zum Verarbeiten der Auswahl einer Antwort.
     function handleSelectAnswer(selectedAnswer) {
         // Aktualisiere die userAnswers, um die ausgewählte Antwort hinzuzufügen.
-        setUserAnswers((prevUserAnswers) => {
-            return [...prevUserAnswers, selectedAnswer];
-        });
+        if (activeQuestionIndex < QUESTIONS.length) {
+            setUserAnswers((prevUserAnswers) => {
+                return [...prevUserAnswers, selectedAnswer];
+            });
+        }
     }
 
     // Wenn das Quiz abgeschlossen ist, zeige die Abschlussnachricht und das Bild an.
@@ -32,7 +35,7 @@ export default function Quiz() {
     }
 
     // Kopiere die Antworten der aktuellen Frage in ein neues Array.
-    const shuffledAnswers = [...QUESTIONS[activeQuestionIndex].answers];
+    const shuffledAnswers = QUESTIONS[activeQuestionIndex]?.answers ? [...QUESTIONS[activeQuestionIndex].answers] : [];
     // Mische die Antworten zufällig.
     shuffledAnswers.sort(() => Math.random() - 0.5);
 
@@ -40,8 +43,13 @@ export default function Quiz() {
     return (
         <div id="quiz">
             <div id="question">
+                {/* Integriere den QuestionTimer, der das Quiz nach einer bestimmten Zeitspanne automatisch fortsetzt */}
+                <QuestionTimer 
+                    timeout={10000} 
+                    onTimeout={() => handleSelectAnswer(null)} 
+                />
                 {/* Anzeige des Textes der aktuellen Frage */}
-                <h2>{QUESTIONS[activeQuestionIndex].text}</h2>
+                <h2>{QUESTIONS[activeQuestionIndex]?.text || 'Loading...'}</h2>
                 <ul id="answers">
                     {/* Iteriere durch die gemischten Antworten und rendere jede als Listenelement */}
                     {shuffledAnswers.map((answer) => (
