@@ -1,68 +1,53 @@
+// Importiere React Hooks (useState und useCallback) aus dem React-Paket
 import { useState, useCallback } from "react";
-import QUESTIONS from '../questions.js';
-import QuestionTimer from '../components/QuestionTimer.jsx';
-import quizCompleteImg from '../assets/quiz-complete.png';
 
-// Definiere die Quiz-Komponente als Standardexport
+// Importiere die Fragen aus einer externen Datei
+import QUESTIONS from '../questions.js';
+
+// Importiere die Question-Komponente
+import Question from "./Question.jsx";
+
+// Importiere die Summary-Komponente
+import Summary from "./Summary.jsx";
+
+// Definiere die Quiz-Komponente und exportiere sie als Standardexport
 export default function Quiz() {
-    // Definiere einen Zustand für die Antworten des Benutzers. Initial ist dieser ein leeres Array.
+    // useState-Hook für die Speicherung der Antworten des Benutzers
     const [userAnswers, setUserAnswers] = useState([]);
 
-    // Berechne den Index der aktuellen Frage basierend auf der Anzahl der gegebenen Antworten.
+    // Berechne den Index der aktuellen Frage
     const activeQuestionIndex = userAnswers.length;
 
-    // Überprüfe, ob das Quiz abgeschlossen ist.
+    // Überprüfe, ob das Quiz abgeschlossen ist
     const quizIsComplete = activeQuestionIndex === QUESTIONS.length;
 
-    // Funktion zum Verarbeiten der Auswahl einer Antwort.
-    const handleSelectAnswer = useCallback (function handleSelectAnswer(selectedAnswer) {
-        // Aktualisiere die userAnswers, um die ausgewählte Antwort hinzuzufügen.
-        setUserAnswers((prevUserAnswers) => {
-          return [...prevUserAnswers, selectedAnswer];
-        });
+    // Callback-Funktion für die Auswahl einer Antwort
+    const handleSelectAnswer = useCallback((selectedAnswer) => {
+        // Aktualisiere den Zustand der Benutzerantworten
+        setUserAnswers((prevUserAnswers) => [...prevUserAnswers, selectedAnswer]);
     }, []);
 
-    const handleSkipAnswer = useCallback(() => handleSelectAnswer(null), [handleSelectAnswer]);
+    // Callback-Funktion zum Überspringen einer Antwort
+    const handleSkipAnswer = useCallback(() => {
+        // Überspringe die Frage durch Hinzufügen einer null-Antwort
+        handleSelectAnswer(null);
+    }, [handleSelectAnswer]);
 
-    // Wenn das Quiz abgeschlossen ist, zeige die Abschlussnachricht und das Bild an.
+    // Überprüfe, ob das Quiz abgeschlossen ist
     if (quizIsComplete) {
-        return (
-            <div id="summary">
-                <img src={quizCompleteImg} alt="Trophy icon" />
-                <h2>Quiz Completed!</h2>
-            </div>
-        );
+        // Wenn das Quiz abgeschlossen ist, zeige die Summary-Komponente an
+        return <Summary userAnswers={userAnswers} />;
     }
 
-    // Kopiere die Antworten der aktuellen Frage in ein neues Array.
-    const shuffledAnswers = QUESTIONS[activeQuestionIndex]?.answers ? [...QUESTIONS[activeQuestionIndex].answers] : [];
-    
-    // Mische die Antworten zufällig.
-    shuffledAnswers.sort(() => Math.random() - 0.5);
-
-    // Rückgabe der JSX-Struktur für das Quiz-UI.
+    // Wenn das Quiz noch nicht abgeschlossen ist, zeige die aktuelle Frage an
     return (
         <div id="quiz">
-            <div id="question">
-                {/* Integriere den QuestionTimer, der das Quiz nach einer bestimmten Zeitspanne automatisch fortsetzt */}
-                <QuestionTimer 
-                    timeout={10000} 
-                    onTimeout={handleSkipAnswer} 
-                />
-                {/* Anzeige des Textes der aktuellen Frage */}
-                <h2>{QUESTIONS[activeQuestionIndex]?.text || 'Loading...'}</h2>
-                <ul id="answers">
-                    {/* Iteriere durch die gemischten Antworten und rendere jede als Listenelement */}
-                    {shuffledAnswers.map((answer) => (
-                        <li key={answer} className="answer">
-                            {/* Button, der die handleSelectAnswer-Funktion aufruft, wenn eine Antwort ausgewählt wird */}
-                            <button onClick={() => handleSelectAnswer(answer)}>
-                                {answer}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            <Question
+                key={activeQuestionIndex} // Schlüssel zur eindeutigen Identifizierung der Frage
+                index={activeQuestionIndex} // Index der aktuellen Frage
+                onSelectAnswer={handleSelectAnswer} // Funktion zum Auswählen einer Antwort
+                onSkipAnswer={handleSkipAnswer} // Funktion zum Überspringen einer Antwort
+            />
         </div>
     );
 }
