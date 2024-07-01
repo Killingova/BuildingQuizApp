@@ -47,7 +47,7 @@ export default function Quiz() {
                 {/* Integriere den QuestionTimer, der das Quiz nach einer bestimmten Zeitspanne automatisch fortsetzt */}
                 <QuestionTimer 
                     timeout={10000} 
-                    onTimeout={handleSelectAnswer} 
+                    onTimeout={handleSkipAnswer} 
                 />
                 {/* Anzeige des Textes der aktuellen Frage */}
                 <h2>{QUESTIONS[activeQuestionIndex]?.text || 'Loading...'}</h2>
